@@ -5,9 +5,11 @@ This is a step by step deployment guide to setup Cloud Foundry on top of EKS or 
 If you don't have a k8s cluster running, we made the life easier for you:
 
 tk8eks: installs eks in 10 minutes:
+
 https://github.com/kubernauts/tk8eks
 
 tk8: installs upstream k8s on AWS, Bare-Metal or OpenStack in 8 minutes:
+
 https://github.com/kubernauts/tk8
 
 
