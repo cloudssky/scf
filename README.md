@@ -28,41 +28,36 @@ Create scf-config-values.yaml ( https://github.com/cloudssky/scf/blob/master/scf
 
 Create persistent storage class using:
 
-kubectl create -f storage-class.yaml
+`kubectl create -f storage-class.yaml`
 
 Source file: https://github.com/cloudssky/scf/blob/master/storage-class.yaml
 
 Test the Persistent Storage Class created by :
 
-kubectl create -f test-storage-class.yaml
+`kubectl create -f test-storage-class.yaml`
 
 Source file: https://github.com/cloudssky/scf/blob/master/test-storage-class.yaml
 
 Check if it’s successfully created by:
 
-kubectl get pv,pvc
+`kubectl get pv,pvc`
 
 Delete the PVC with:
 
-kubectl  delete -f test-storage-class.yaml
+`kubectl  delete -f test-storage-class.yaml`
 
 Create the following security rules on the Security Group for the EKS node:
 
-```bash
-Create the following security rules on the Security Group for the EKS node:sh
-Type	Protocol	Port Range	Source	Description
-HTTP
 
-TCP	80	0.0.0.0/0	CAP HTTP
+Create the following security rules on the Security Group for the EKS node:sh
+
+```bash
+HTTP TCP	80	0.0.0.0/0	CAP HTTP
 HTTPS	TCP	443	0.0.0.0/0	CAP HTTPS
 Custom TCP Rule	TCP	2793	0.0.0.0/0	CAP UAA
 Custom TCP Rule	TCP	2222	0.0.0.0/0	CAP SSH
 Custom TCP Rule	TCP	4443	0.0.0.0/0	CAP WSS
-Custom
-
-TCP Rule
-
-TCP	20000 - 20009	0.0.0.0/0	CAP TCP Routing
+Custom TCP Rule TCP	20000 - 20009	0.0.0.0/0	CAP TCP Routing
 ```
 
 
@@ -72,7 +67,8 @@ Enable ssh on the nodes by opening SSH port 22 on the Security Group for nodes
 
 SSH in to the nodes then:
 
-sudo growpart /dev/nvme0n1 1 && sudo xfs_growfs -d /
+`sudo growpart /dev/nvme0n1 1 && sudo xfs_growfs -d /`
+
 This steps can be different depending on the AMI or file system refer:
 
 https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-linux.html
@@ -80,46 +76,49 @@ https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/recognize-expanded-volume-li
 Install Helm:
 
 
-
+```bash
 kubectl create -f rbac-config.yaml
 helm init --service-account tiller
 kubectl get pods --namespace kube-system | grep tiller
-
+```
 
 File source: https://github.com/cloudssky/scf/blob/master/rbac-config.yaml
 
 Add suse repo and verify:
 
 
-
+```bash
 helm repo add suse https://kubernetes-charts.suse.com/
 helm repo list
-
-
-
+```
 
 Create Name Spaces for SCF and UAA:
 
-
-
+```bash
 kubectl create ns scf
 Kubectl create ns uaa
-
+```
 
 
 
 Install UAA with helm:
 
-
+```bash
 helm install suse/uaa  --name susecf-uaa --namespace uaa --values scf-config-values.yaml
-Check if all the pods are ready:
+```
+
+1. Check if all the pods are ready:
+
+```bash
 kubectl -n uaa get po -w
+```
+
 Wait until all pods are ready
 
 Output like:
 
 
-
+```bash
 NAME                        READY STATUS RESTARTS   AGE
  
 mysql-0                     1/1 Running 0     3m
@@ -129,40 +128,55 @@ mysql-proxy-0               1/1 Running 0     3m
 secret-generation-1-lmrhl   0/1 Completed 0     3m
  
 uaa-0                       0/1 Running 0     3m
+```
 
 
 Install scf when all pods are ready:
 
-
+```bash
 SECRET=$(kubectl get pods --namespace uaa -o jsonpath='{.items[*].spec.containers[?(.name=="uaa")].env[(.name=="INTERNAL_CA_CERT")].valueFrom.secretKeyRef.name}')
 CA_CERT="$(kubectl get secret $SECRET --namespace uaa -o jsonpath="{.data['internal-ca-cert']}" | base64 --decode -)"
  helm install suse/cf --name susecf-scf --namespace scf --values scf-config-values.yaml --set "secrets.UAA_CA_CERT=${CA_CERT}"
+ ```
+
 Wait until all pods are ready:
 
+```bash
 kubectl get pods --namespace scf -w
+```
+
 Test with cf cli:
 
 Install CF CLI for your OS
 
-
-
+```bash
 cf api --skip-ssl-validation https://api.35.162.169.236.kubernauts.org
 cf login
+```
+
            e-mail: admin
 
            Password: password
 
 Install Stratos Web UI:
 
+```bash
 kubectl create namespace stratos
+```bash
+
 Check if you have Helm charts for Startos (suse/console):
 
+```bash
 helm search suse
+```
 
 Install Stratos using helm
-helm install suse/console  --name susecf-console --namespace stratos --values scf-config-values.yaml  --set storageClass=gp2
-*note use the persistent storage class name created with step 5
 
+```bash
+helm install suse/console  --name susecf-console --namespace stratos --values scf-config-values.yaml  --set storageClass=gp2
+```
+
+*note use the persistent storage class name created with step 5
 
 
 Related links
