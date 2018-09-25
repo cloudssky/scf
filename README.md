@@ -154,15 +154,15 @@ cf api --skip-ssl-validation https://api.35.162.169.236.kubernauts.org
 cf login
 ```
 
-           e-mail: admin
+e-mail: admin
 
-           Password: password
+Password: password
 
 Install Stratos Web UI:
 
 ```bash
 kubectl create namespace stratos
-```bash
+```
 
 Check if you have Helm charts for Startos (suse/console):
 
