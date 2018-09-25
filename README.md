@@ -12,21 +12,23 @@ tk8: installs upstream k8s on AWS, Bare-Metal or OpenStack in 8 minutes:
 
 https://github.com/kubernauts/tk8
 
+## Steps:
 
-Configure kubectl to use EKS cluster
+1. Configure kubectl to use EKS cluster
 
-Get the Public IP & private ( IP used the private DNS name)  for any EKS node except master
-Create a DNS record on the test Domain
+2. Get the Public IP & private ( IP used the private DNS name)  for any EKS node except master
 
-Update A record *.<your-test-domain>  (eg *.kubernauts.org) pointing to the node’s Public IP)
+3. Create a DNS record on the test Domain
 
-Create scf-config-values.yaml ( https://github.com/cloudssky/scf/blob/master/scf-config-values.yaml)
+4. Update A record *.<your-test-domain>  (eg *.kubernauts.org) pointing to the node’s Public IP)
+
+5. Create scf-config-values.yaml ( https://github.com/cloudssky/scf/blob/master/scf-config-values.yaml)
 
 ** note that Domain name is <public_ip_of_eks_node> from step 2
 
 * external_ips: ["10.0.1.103"] is Private IP of EKS Node from step 2
 
-Create persistent storage class using:
+Create persistent storage class using (adapt the zone):
 
 `kubectl create -f storage-class.yaml`
 
@@ -49,8 +51,6 @@ Delete the PVC with:
 Create the following security rules on the Security Group for the EKS node:
 
 
-Create the following security rules on the Security Group for the EKS node:sh
-
 ```bash
 HTTP TCP	80	0.0.0.0/0	CAP HTTP
 HTTPS	TCP	443	0.0.0.0/0	CAP HTTPS
@@ -60,7 +60,7 @@ Custom TCP Rule	TCP	4443	0.0.0.0/0	CAP WSS
 Custom TCP Rule TCP	20000 - 20009	0.0.0.0/0	CAP TCP Routing
 ```
 
-
+### optional
 
 Increase the EBS volume size of all nodes from 20GB to 60GB:
 Enable ssh on the nodes by opening SSH port 22 on the Security Group for nodes
@@ -77,37 +77,33 @@ Install Helm:
 
 
 ```bash
-kubectl create -f rbac-config.yaml
-helm init --service-account tiller
-kubectl get pods --namespace kube-system | grep tiller
+helm init
+kubectl create serviceaccount --namespace kube-system tiller
+kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}'
 ```
 
-File source: https://github.com/cloudssky/scf/blob/master/rbac-config.yaml
-
-Add suse repo and verify:
-
+### Add suse repo and verify:
 
 ```bash
 helm repo add suse https://kubernetes-charts.suse.com/
 helm repo list
 ```
 
-Create Name Spaces for SCF and UAA:
+### Create Name Spaces for SCF and UAA:
 
 ```bash
 kubectl create ns scf
 Kubectl create ns uaa
 ```
 
-
-
-Install UAA with helm:
+### Install UAA with helm:
 
 ```bash
 helm install suse/uaa  --name susecf-uaa --namespace uaa --values scf-config-values.yaml
 ```
 
-1. Check if all the pods are ready:
+Check if all the pods are ready:
 
 ```bash
 kubectl -n uaa get po -w
@@ -116,7 +112,6 @@ kubectl -n uaa get po -w
 Wait until all pods are ready
 
 Output like:
-
 
 ```bash
 NAME                        READY STATUS RESTARTS   AGE
@@ -130,8 +125,7 @@ secret-generation-1-lmrhl   0/1 Completed 0     3m
 uaa-0                       0/1 Running 0     3m
 ```
 
-
-Install scf when all pods are ready:
+### Install scf when all pods are ready:
 
 ```bash
 SECRET=$(kubectl get pods --namespace uaa -o jsonpath='{.items[*].spec.containers[?(.name=="uaa")].env[(.name=="INTERNAL_CA_CERT")].valueFrom.secretKeyRef.name}')
@@ -145,7 +139,7 @@ Wait until all pods are ready:
 kubectl get pods --namespace scf -w
 ```
 
-Test with cf cli:
+### Test with cf cli:
 
 Install CF CLI for your OS
 
@@ -170,7 +164,7 @@ Check if you have Helm charts for Startos (suse/console):
 helm search suse
 ```
 
-Install Stratos using helm
+### Install Stratos using helm
 
 ```bash
 helm install suse/console  --name susecf-console --namespace stratos --values scf-config-values.yaml  --set storageClass=gp2
