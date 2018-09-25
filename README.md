@@ -14,10 +14,14 @@ https://github.com/kubernauts/tk8
 
 
 Configure kubectl to use EKS cluster
+
 Get the Public IP & private ( IP used the private DNS name)  for any EKS node except master
 Create a DNS record on the test Domain
+
 Update A record *.<your-test-domain>  (eg *.kubernauts.org) pointing to the node’s Public IP)
-Create scf-config-values.yaml ( https://github.com/anoopl/scf/blob/master/scf-config-values.yaml)
+
+Create scf-config-values.yaml ( https://github.com/cloudssky/scf/blob/master/scf-config-values.yaml)
+
 ** note that Domain name is <public_ip_of_eks_node> from step 2
 
 * external_ips: ["10.0.1.103"] is Private IP of EKS Node from step 2
@@ -26,13 +30,13 @@ Create persistent storage class using:
 
 kubectl create -f storage-class.yaml
 
-Source file: https://github.com/anoopl/scf/blob/master/storage-class.yaml
+Source file: https://github.com/cloudssky/scf/blob/master/storage-class.yaml
 
 Test the Persistent Storage Class created by :
 
 kubectl create -f test-storage-class.yaml
 
-Source file: https://github.com/anoopl/scf/blob/master/test-storage-class.yaml
+Source file: https://github.com/cloudssky/scf/blob/master/test-storage-class.yaml
 
 Check if it’s successfully created by:
 
@@ -82,7 +86,7 @@ helm init --service-account tiller
 kubectl get pods --namespace kube-system | grep tiller
 
 
-File source: https://github.com/anoopl/scf/blob/master/rbac-config.yaml
+File source: https://github.com/cloudssky/scf/blob/master/rbac-config.yaml
 
 Add suse repo and verify:
 
