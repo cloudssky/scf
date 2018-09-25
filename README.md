@@ -23,21 +23,27 @@ Create scf-config-values.yaml ( https://github.com/anoopl/scf/blob/master/scf-co
 Create persistent storage class using:
 
 kubectl create -f storage-class.yaml
+
 Source file: https://github.com/anoopl/scf/blob/master/storage-class.yaml
 
 Test the Persistent Storage Class created by :
 
 kubectl create -f test-storage-class.yaml
+
 Source file: https://github.com/anoopl/scf/blob/master/test-storage-class.yaml
 
 Check if it’s successfully created by:
 
 kubectl get pv,pvc
+
 Delete the PVC with:
 
 kubectl  delete -f test-storage-class.yaml
 
 Create the following security rules on the Security Group for the EKS node:
+
+```bash
+Create the following security rules on the Security Group for the EKS node:sh
 Type	Protocol	Port Range	Source	Description
 HTTP
 
@@ -51,6 +57,8 @@ Custom
 TCP Rule
 
 TCP	20000 - 20009	0.0.0.0/0	CAP TCP Routing
+```
+
 
 
 Increase the EBS volume size of all nodes from 20GB to 60GB:
